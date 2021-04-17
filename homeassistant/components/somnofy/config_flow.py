@@ -1,59 +1,77 @@
 """Config flow for Somnofy integration."""
+import asyncio
 import logging
 
+from async_timeout import timeout
 import voluptuous as vol
+from voluptuous.error import EmailInvalid, LengthInvalid, RequiredFieldInvalid
 
-from homeassistant import config_entries, core, exceptions
+from homeassistant import config_entries, core, exceptions, data_entry_flow
+from homeassistant.const import CONF_DEVICE_ID, CONF_EMAIL, CONF_NAME, CONF_PASSWORD
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import DOMAIN  # pylint:disable=unused-import
-from .somnofy import Somnofy
+from .exceptions import ApiError
+from .somnofy import Somnofy, CredentialErrors
 
 _LOGGER = logging.getLogger(__name__)
 
 
-DATA_SCHEMA = vol.Schema({("serial"): str})
-
-
-async def validate_input(hass: core.HomeAssistant, data: dict):
-    """Check if device can be reached."""
-
-    if len(data["serial"]) < 3:
-        raise InvalidHost
-
-    somnofy = Somnofy(hass, data["serial"])
-
-    result = await somnofy.check_connection(data["serial"])
-    if not result:
-        raise CannotConnect
-
-    return {"Somnofy": data["serial"]}
-
-
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Hello World."""
+class SomnofyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a Somnofy Config Flow."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
+    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
+    init_info = None
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
+        """Handle the user input."""
+
         errors = {}
+
         if user_input is not None:
+            websession = async_get_clientsession(self.hass)
             try:
-                info = await validate_input(self.hass, user_input)
+                async with timeout(10):
+                    somnofy = Somnofy(
+                        user_input[CONF_EMAIL],
+                        user_input[CONF_PASSWORD],
+                        user_input[CONF_DEVICE_ID],
+                        websession
+                    )
+                    valid = await somnofy.verify_credentials()
+                    if valid:
+                        if not user_input[CONF_NAME]:
+                            name = user_input[CONF_DEVICE_ID]
+                        else:
+                            name = user_input[CONF_NAME]
+                        return self.async_create_entry(
+                        title=name,
+                        data={
+                            "something_special": user_input["email"]
+                        },
+                    )
 
-                return self.async_create_entry(title=info["title"], data=user_input)
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidHost:
-                errors["serial"] = "cannot_connect"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
+            except (CredentialErrors):
+                errors["base"] = "auth_error" 
 
+    
         return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_EMAIL): str,
+                    vol.Required(CONF_PASSWORD): str,
+                    vol.Required(CONF_DEVICE_ID): str,
+                    vol.Optional(CONF_NAME): str,
+                }
+            ),
+            errors=errors,
         )
+
+    async def async_step_account(self, user_input=None):
+        return self.async_create_entry(title=self.data["title"], data=self.data)
+
 
 
 class CannotConnect(exceptions.HomeAssistantError):

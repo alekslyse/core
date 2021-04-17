@@ -5,10 +5,9 @@
         "title": "AccuWeather",
         "description": "If you need help with the configuration have a look here: https://www.home-assistant.io/integrations/accuweather/\n\nSome sensors are not enabled by default. You can enable them in the entity registry after the integration configuration.\nWeather forecast is not enabled by default. You can enable it in the integration options.",
         "data": {
-          "name": "[%key:common::config_flow::data::name%]",
-          "api_key": "[%key:common::config_flow::data::api_key%]",
-          "latitude": "[%key:common::config_flow::data::latitude%]",
-          "longitude": "[%key:common::config_flow::data::longitude%]"
+          "email": "[%key:common::config_flow::data::email%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "serial": "[%key:common::config_flow::data::serial%]",
         }
       }
     },
@@ -34,7 +33,7 @@
   },
   "system_health": {
     "info": {
-      "can_reach_server": "Reach AccuWeather server",
+      "can_reach_server": "Reach Somnofy server",
       "remaining_requests": "Remaining allowed requests"
     }
   }

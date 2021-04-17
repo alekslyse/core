@@ -5,6 +5,15 @@
   "documentation": "https://www.home-assistant.io/integrations/somnofy",
   "dependencies": ["mqtt"],
   "requirements": [],
+  "dhcp": [
+    {
+      "hostname": "somnofy_*",
+      "macaddress": "3C1A9E*"
+    }
+  ],
+  "mqtt": [
+      "somnofy/#"
+  ],
   "codeowners": ["@alekslyse"],
   "iot_class": "local_polling"
 }
