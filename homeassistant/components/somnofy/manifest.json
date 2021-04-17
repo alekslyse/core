@@ -1,0 +1,9 @@
+{
+  "domain": "somnofy",
+  "name": "Somnofy Sleeping Tracker",
+  "documentation": "https://www.home-assistant.io/integrations/somnofy",
+  "dependencies": ["mqtt"],
+  "requirements": [],
+  "codeowners": ["@alekslyse"],
+  "iot_class": "local_polling"
+}
