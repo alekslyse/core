@@ -223,6 +223,7 @@ FLOWS = [
     "soma",
     "somfy",
     "somfy_mylink",
+    "somnofy",
     "sonarr",
     "songpal",
     "sonos",

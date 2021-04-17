@@ -31,8 +31,8 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
     # We only want this platform to be set up via discovery.
 
-    add_entities([SomnofySensor("somnofy/VTKBMNSHGQ/environment")])
-    add_entities([SomnofySensor("somnofy/VTBMWLSYHR/environment")])
+    add_entities([SomnofySensor("VTKBMNSHGQ")])
+    add_entities([SomnofySensor("VTBMWLSYHR")])
 
     return True
 
@@ -40,15 +40,13 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 class SomnofySensor(Entity):
     """Representation of a Somnofy sensor that is updated via MQTT."""
 
-    def __init__(self, topic):
+    def __init__(self, id):
         """Initialize the sensor."""
 
-        self._entity_id = slugify(topic.replace("/", "_"))
-        self._topic = topic
+        self._entity_id = slugify(id.replace("/", "_"))
+        self._topic = "somnofy/" + id + "/#"
 
-        _LOGGER.debug(topic.split("/")[-1])
-
-        self._name = None
+        self._name = "Somnofy_" + id
         self._device_class = None
         self._enable_default = None
         self._unit_of_measurement = None
@@ -64,11 +62,12 @@ class SomnofySensor(Entity):
         self._light_green = 0
         self._light_blue = 0
         self._sound_amplitude = 0
+        self._presence = False
+        self._duration = 0
 
     async def async_added_to_hass(self):
         """Subscribe to MQTT events."""
 
-        _LOGGER.debug("Setting up somnofy fsdfsdfsd")
         _LOGGER.debug("Somnofy got mqtt %s", self._topic)
 
         @callback
@@ -82,14 +81,35 @@ class SomnofySensor(Entity):
 
             states = json.loads(message.payload)
 
-            self._temperature = states["temperature"]
-            self._humidity = states["humidity"]
-            self._indoor_air_quality = states["indoor_air_quality"]
-            self._light_ambient = states["light_ambient"]
-            self._light_red = states["light_red"]
-            self._light_green = states["light_green"]
-            self._light_blue = states["light_blue"]
-            self._sound_amplitude = states["sound_amplitude"]
+            if "temperature" in states:
+                self._temperature = states["temperature"]
+
+            if "humidity" in states:
+                self._humidity = states["humidity"]
+
+            if "indoor_air_quality" in states:
+                self._indoor_air_quality = states["indoor_air_quality"]
+
+            if "light_ambient" in states:
+                self._light_ambient = states["light_ambient"]
+
+            if "light_red" in states:
+                self._light_red = states["light_red"]
+
+            if "light_green" in states:
+                self._light_green = states["light_green"]
+
+            if "light_blue" in states:
+                self._light_blue = states["light_blue"]
+
+            if "sound_amplitude" in states:
+                self._sound_amplitude = states["sound_amplitude"]
+
+            if "presence" in states:
+                self._presence = states["presence"]
+
+            if "duration" in states:
+                self._duration = states["duration"]
 
             self.async_write_ha_state()
 
@@ -107,19 +127,22 @@ class SomnofySensor(Entity):
             "light_green": self._light_green,
             "light_blue": self._light_blue,
             "sound_amplitude": self._sound_amplitude,
+            "presence": self._presence,
+            "duration": self._duration,
         }
 
+    @property
+    def state(self):
+        """Return the current state."""
+        if self._presence:
+            return "Present"
+        else:
+            return "Away"
 
-@property
-def state(self):
-    """Return the current state."""
-    return "prenense"
-
-
-@property
-def name(self):
-    """Return the current state."""
-    return self._name
+    @property
+    def name(self):
+        """Return the current state."""
+        return self._name
 
 
 @property
