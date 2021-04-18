@@ -13,6 +13,8 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import slugify
 
+from .const import DOMAIN
+
 _LOGGER = logging.getLogger(__name__)
 
 _LOGGER.debug("Setting up somnofy sensors")
@@ -31,11 +33,16 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
     # We only want this platform to be set up via discovery.
 
+
+    return True
+
+async def async_setup_entry(hass, config, add_entities, discovery_info=None):
+   
+   
     add_entities([SomnofySensor("VTKBMNSHGQ")])
     add_entities([SomnofySensor("VTBMWLSYHR")])
 
     return True
-
 
 class SomnofySensor(Entity):
     """Representation of a Somnofy sensor that is updated via MQTT."""
@@ -45,7 +52,7 @@ class SomnofySensor(Entity):
 
         self._entity_id = slugify(id.replace("/", "_"))
         self._topic = "somnofy/" + id + "/#"
-
+        self._id = id
         self._name = "Somnofy_" + id
         self._device_class = None
         self._enable_default = None
@@ -143,6 +150,27 @@ class SomnofySensor(Entity):
     def name(self):
         """Return the current state."""
         return self._name
+
+    @property
+    def unique_id(self):
+        """Return a unique ID."""
+        return self._id
+    
+    @property
+    def device_id(self):
+        """Return the ID of the physical device this sensor is part of."""
+        return self._id
+
+    @property
+    def device_info(self):
+        """Return the device_info of the device."""
+        device_info = {
+            "identifiers": {(DOMAIN, self._id)},
+            "name": self.name,
+            "manufacturer": "Somnofy",
+            "model": f"gen 1",
+        }
+        return device_info
 
 
 @property
