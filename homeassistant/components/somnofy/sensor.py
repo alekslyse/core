@@ -39,17 +39,30 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
    
    
-    add_entities([SomnofySensor("VTKBMNSHGQ")])
-    add_entities([SomnofySensor("VTBMWLSYHR")])
+    
+
+    entitites_environment = ["temperature", "humidity", "indoor_air_quality", "light_ambient", 
+                "light_red", "light_green", "light_blue", "sound_amplitude" ]
+    entities_presense = ["presence", "duration"]
+
+    
+    #add_entities([SomnofySensor("VTBMWLSYHR", entitites_environment, entitites_environment)])
+
+    for environment in entitites_environment:
+        add_entities([SomnofySensor("VTKBMNSHGQ", environment)])
+
+    for environment in entities_presense:
+        add_entities([SomnofySensor("VTKBMNSHGQ", environment)])
 
     return True
 
 class SomnofySensor(Entity):
     """Representation of a Somnofy sensor that is updated via MQTT."""
 
-    def __init__(self, id):
+    def __init__(self, id, environment):
         """Initialize the sensor."""
 
+        self._env_id = id+"-"+environment
         self._entity_id = slugify(id.replace("/", "_"))
         self._topic = "somnofy/" + id + "/#"
         self._id = id
@@ -122,39 +135,21 @@ class SomnofySensor(Entity):
 
         await mqtt.async_subscribe(self.hass, self._topic, message_received, 1)
 
-    @property
-    def extra_state_attributes(self):
-        """Provide the last ADB command's response and the device's HDMI input as attributes."""
-        return {
-            "temperature": self._temperature,
-            "humidity": self._humidity,
-            "indoor_air_quality": self._indoor_air_quality,
-            "light_ambient": self._light_ambient,
-            "light_red": self._light_red,
-            "light_green": self._light_green,
-            "light_blue": self._light_blue,
-            "sound_amplitude": self._sound_amplitude,
-            "presence": self._presence,
-            "duration": self._duration,
-        }
 
     @property
     def state(self):
         """Return the current state."""
-        if self._presence:
-            return "Present"
-        else:
-            return "Away"
+        return 21
 
     @property
     def name(self):
         """Return the current state."""
-        return self._name
+        return self._env_id
 
     @property
     def unique_id(self):
         """Return a unique ID."""
-        return self._id
+        return self._env_id
     
     @property
     def device_id(self):
