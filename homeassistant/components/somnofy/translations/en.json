@@ -1,0 +1,27 @@
+{
+    "config": {
+        "abort": {
+            "already_configured_device": "Device is already configured"     
+        },
+        "error": {
+            "auth_error": "Could not authenticate"     
+        },
+        "flow_title": "Somnofy: {name}",
+        "step": {
+            "user": {
+                "data": {
+                    "email": "Email",
+                    "password": "Password",
+                    "device_id": "Device ID",
+                    "name": "Friendly Name"
+                },
+                "description": "Set up your Somnofy Sleep Tracker to integrate with Home Assistant.",
+                "title": "Somnofy Setup"
+            },
+            "mqtt_confirm": {
+                "description": "Do you want to add the Somnofy device with serialnumber `{serialnumber}` to Home Assistant?",
+                "title": "Discovered Somnofy device"
+            }
+        }
+    }
+}

@@ -4,3 +4,4 @@
 # name for the integration.
 DOMAIN = "somnofy"
 HUMIDITY = "humidity"
+SOUND_AMPLITUDE: str = "dBa"
