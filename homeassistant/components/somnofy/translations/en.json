@@ -16,8 +16,8 @@
                     "device_id": "Device ID",
                     "mqtt_host": "MQTT hostname or IP-address"
                 },
-                "description": "Set up your Somnofy Sleep Tracker to integrate with Home Assistant.",
-                "title": "Somnofy Sleep Tracker"
+                "description": "Set up your Somnofy Non-Contact Smart Sleep Monitor to integrate with Home Assistant.",
+                "title": "Somnofy Non-Contact Smart Sleep Monitor"
             },
             "config": {
                 "data": {
@@ -29,7 +29,7 @@
                     "topic_presence": "The topic MQTT listens to"
                 },
                 "description": "You need to input the MQTT information here. If your Somnefy is already setup for your system, just click submit as its prefilled with your original settings!",
-                "title": "Somnofy Sleep Tracker Configuration"
+                "title": "Somnofy SNon-Contact Smart Sleep Monitor Configuration"
             },
             "mqtt_confirm": {
                 "description": "Do you want to add the Somnofy device with serialnumber `{serialnumber}` to Home Assistant?",

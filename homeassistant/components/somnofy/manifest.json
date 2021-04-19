@@ -1,6 +1,6 @@
 {
   "domain": "somnofy",
-  "name": "Somnofy Sleeping Tracker",
+  "name": "Somnofy Non-Contact Smart Sleep Monitor",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/somnofy",
   "dependencies": ["mqtt"],

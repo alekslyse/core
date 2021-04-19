@@ -1,14 +1,9 @@
 """Platform for sensor integration."""
-# This file shows the setup for the sensors associated with the cover.
-# They are setup in the same way with the call to the async_setup_entry function
-# via HA from the module __init__. Each sensor has a device_class, this tells HA how
-# to display it in the UI (for know types). The unit_of_measurement property tells HA
-# what the unit is, so it can display the correct range. For predefined types (such as
-# battery), the unit_of_measurement should match what's expected.
 import json
 import logging
 
 from homeassistant.components import mqtt
+from homeassistant.const import CONF_DEVICE_ID
 from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import slugify
@@ -26,39 +21,22 @@ ATTR_CONDITION_TEMPERATURE = "temperature"
 ATTR_CONDITION_HUMIDITY = "humidity"
 
 
-# See cover.py for more details.
-# Note how both entities for each roller sensor (battry and illuminance) are added at
-# the same time to the same list. This way only a single async_add_devices call is
-# required.
-def setup_platform(hass, config, add_entities, discovery_info=None):
-    """Set up the sensor platform."""
-    # We only want this platform to be set up via discovery.
+async def async_setup_entry(hass, entry, add_entities):
+    """Async somnofy sensor setup entry."""
+    serial = entry.data[CONF_DEVICE_ID]
+    _LOGGER.debug("LOOK HERE %s", serial)
 
-    return True
+    topic_environment = str(entry.data["user_input"]["topic_environment"])
+    topic_environment = topic_environment.replace("[SN]", serial)
+    topic_presence = str(entry.data["user_input"]["topic_presence"])
+    topic_presence = topic_presence.replace("[SN]", serial)
 
-
-async def async_setup_entry(hass, config, add_entities, discovery_info=None):
-
-    entitites_environment = [
-        "temperature",
-        "humidity",
-        "indoor_air_quality",
-        "light_ambient",
-        "light_red",
-        "light_green",
-        "light_blue",
-        "sound_amplitude",
-    ]
-    entities_presense = ["presence", "duration"]
-
-    # add_entities([SomnofySensor("VTBMWLSYHR", entitites_environment, entitites_environment)])
-
-    topic_environment = "somnofy/VTKBMNSHGQ/environment/#"
-    topic_presence = "somnofy/VTKBMNSHGQ/presence/#"
+    _LOGGER.debug("Listening to environment topic %s", topic_environment)
+    _LOGGER.debug("Listening to presence topic %s", topic_presence)
 
     for entity in DEFINITIONS:
         _LOGGER.debug("Add entity for topic: %s", entity)
-        add_entities([SomnofySensor("VTKBMNSHGQ", entity)])
+        add_entities([SomnofySensor(serial, entity, topic_environment, topic_presence)])
 
     return True
 
@@ -66,7 +44,7 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 class SomnofySensor(Entity):
     """Representation of a Somnofy sensor that is updated via MQTT."""
 
-    def __init__(self, serial, entity):
+    def __init__(self, serial, entity, topic_e, topic_p):
         """Initialize the sensor."""
 
         self._env_id = serial + "-" + entity
@@ -96,6 +74,8 @@ class SomnofySensor(Entity):
         self._device_class = None
         self._friendly_name = None
         self._unit = None
+        self._topic_e = topic_e
+        self._topic_p = topic_p
 
     async def async_added_to_hass(self):
         """Subscribe to MQTT events."""
@@ -133,7 +113,8 @@ class SomnofySensor(Entity):
 
             self.async_write_ha_state()
 
-        await mqtt.async_subscribe(self.hass, self._topic, message_received, 1)
+        await mqtt.async_subscribe(self.hass, self._topic_e, message_received, 1)
+        await mqtt.async_subscribe(self.hass, self._topic_p, message_received, 1)
 
     @property
     def state(self):
@@ -162,7 +143,7 @@ class SomnofySensor(Entity):
             "identifiers": {(DOMAIN, self._id)},
             "name": self._id,
             "manufacturer": "Somnofy",
-            "model": f"gen 1",
+            "model": "Non-Contact Smart Sleep Monitor",
         }
         return device_info
 
