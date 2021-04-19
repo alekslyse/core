@@ -1,11 +1,16 @@
 """The Detailed Hello World Push integration."""
 import asyncio
 import logging
+import voluptuous as vol
 
+
+from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_ACCESS_TOKEN, CONF_NAME, EVENT_HOMEASSISTANT_STOP, CONF_DEVICE_ID
+import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN
+from .const import DOMAIN, DATA_HASS_CONFIG
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,48 +20,69 @@ PLATFORMS = ["sensor"]
 
 _LOGGER.debug("Setting up somnofy sensors")
 
+CONFIG_SCHEMA = vol.Schema(
+    {DOMAIN: vol.Schema({vol.Required(CONF_DEVICE_ID): cv.string})},
+    extra=vol.ALLOW_EXTRA,
+)
 
-async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the Hello World component."""
-    # Ensure our name space for storing objects is a known type. A dict is
-    # common/preferred as it allows a separate instance of your class for each
-    # instance that has been created in the UI.
-    hass.data.setdefault(DOMAIN, {})
 
-    hass.helpers.discovery.load_platform("sensor", DOMAIN, {}, config)
+async def async_setup(hass, config):
+    """Set up the Somnofy component."""
+
+    hass.data[DATA_HASS_CONFIG] = config
+
+    if DOMAIN not in config:
+        return True
+
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": config_entries.SOURCE_IMPORT},
+            data=config[DOMAIN],
+        )
+    )
 
     return True
+
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Hello World from a config entry."""
+    """Set up somnofy from a config entry."""
     # Store an instance of the "connecting" class that does the work of speaking
     # with your actual devices.
-    _LOGGER.info("Setting up somnofy sddsf")
+  
+
+  
+
+ 
+    hass.data.setdefault(DOMAIN, {})
+
+    
+  
+
+    
+
     # This creates each HA object for each platform your device requires.
     # It's done by calling the `async_setup_entry` function in each platform module.
-    for component in PLATFORMS:
+    for platform in PLATFORMS:
         hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
+            hass.config_entries.async_forward_entry_setup(entry, platform)
         )
 
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+async def async_unload_entry(hass, config_entry):
     """Unload a config entry."""
-    # This is called when an entry/configured device is to be removed. The class
-    # needs to unload itself, and remove callbacks. See the classes for further
-    # details
     unload_ok = all(
         await asyncio.gather(
             *[
-                hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in PLATFORMS
+                hass.config_entries.async_forward_entry_unload(config_entry, platform)
+                for platform in PLATFORMS
             ]
         )
     )
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
 
-    return unload_ok
+    if unload_ok:
+
+        return unload_ok

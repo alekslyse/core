@@ -7,18 +7,27 @@
         "data": {
           "email": "[%key:common::config_flow::data::email%]",
           "password": "[%key:common::config_flow::data::password%]",
-          "device_id": "[%key:common::config_flow::data::device_name%]",
-          "name": "[%key:common::config_flow::data::name%]"
+          "device_id": "[%key:common::config_flow::data::device_name%]"
+        }
+      },
+      "config": {
+        "title": "Somnofy",
+        "description": "This is the info we found for your device. If pre-filled make sure the mqtt server can be read by your Home Assistant installation.",
+        "data": {
+          "host": "[%key:common::config_flow::data::mqtt_host%]",
+          "port": "[%key:common::config_flow::data::mqtt_port%]",
+          "username": "[%key:common::config_flow::data::mqtt_username%]",
+          "password": "[%key:common::config_flow::data::mqtt_password%]",
+          "topic_environment": "[%key:common::config_flow::data::mqtt_topic_environment%]",
+          "topic_presence": "[%key:common::config_flow::data::mqtt_topic_presence%]"
         }
       }
     },
     "error": {
       "auth_error": "[%key:common::config_flow::error::auth_error%]",
-      "invalid_api_key": "[%key:common::config_flow::error::invalid_api_key%]",
-      "requests_exceeded": "The allowed number of requests to Accuweather API has been exceeded. You have to wait or change API Key."
+      "serial_error": "[%key:common::config_flow::error::serial_error%]"
     },
     "abort": {
-      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]"
     }
   },
   "options": {
@@ -34,7 +43,7 @@
   },
   "system_health": {
     "info": {
-      "can_reach_server": "Reach AccuWeather server",
+      "can_reach_server": "Reach Somnofy server",
       "remaining_requests": "Remaining allowed requests"
     }
   }

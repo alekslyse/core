@@ -11,9 +11,6 @@
       "macaddress": "3C1A9E*"
     }
   ],
-  "mqtt": [
-      "somnofy/#"
-  ],
   "codeowners": ["@alekslyse"],
   "iot_class": "local_polling"
 }
