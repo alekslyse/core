@@ -5,6 +5,8 @@ import logging
 from async_timeout import timeout
 import voluptuous as vol
 
+from homeassistant.components.dhcp import HOSTNAME, IP
+
 from homeassistant import config_entries, exceptions
 from homeassistant.const import (
     CONF_DEVICE_ID,
@@ -33,6 +35,45 @@ class SomnofyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
     init_info = None
+
+    def __init__(self):
+        """Initialize the Somnefy flow."""
+        self.hostname = None
+
+
+    async def async_step_dhcp(self, discovery_info: dict):
+        """Prepare configuration for a DHCP discovered Somnify device."""
+        
+        _LOGGER.debug("Found a DHCP match on device %s", discovery_info.get(HOSTNAME).upper())
+
+        self.hostname = discovery_info.get(HOSTNAME)[8:18].upper()
+
+   
+        _LOGGER.debug("This is a Somnofy device")
+
+        await self.async_set_unique_id(self.hostname)
+        self._abort_if_unique_id_configured()
+
+    
+        if self._hostname_already_configured(self.hostname):
+            _LOGGER.debug("This is a Somnofy device has already been setup")
+            return self.async_abort(reason="already_configured")
+
+
+        self.hostname = self.hostname
+        self.context["title_placeholders"] = {CONF_DEVICE_ID: self.hostname}
+        _LOGGER.debug("Sending hostname to the main class %s", self.hostname)
+        return await self.async_step_user()
+        
+    
+    def _hostname_already_configured(self, host):
+        """See if we already have an entry matching the host."""
+        for entry in self._async_current_entries():
+            _LOGGER.error(entry.data.get(CONF_DEVICE_ID))
+            _LOGGER.error(host)
+            if entry.data.get(CONF_DEVICE_ID) == host:
+                return True
+        return False
 
     async def async_step_user(self, user_input=None):
         """Handle the user input."""
@@ -73,12 +114,40 @@ class SomnofyFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 {
                     vol.Required(CONF_EMAIL): str,
                     vol.Required(CONF_PASSWORD): str,
-                    vol.Required(CONF_DEVICE_ID): str,
+                    vol.Required(CONF_DEVICE_ID, default=self.hostname): str,
                 }
             ),
             errors=errors,
         )
 
+        @staticmethod
+        @callback
+        def async_get_options_flow(config_entry):
+            return OptionsFlowHandler()
+
+
+        class OptionsFlowHandler(config_entries.OptionsFlow):
+            async def async_step_init(self, user_input=None):
+                """Manage the options."""
+                if user_input is not None:
+                    return self.async_create_entry(title="", data=user_input)
+
+                return self.async_show_form(
+                    step_id="init",
+                    data_schema=vol.Schema(
+                        {
+                            vol.Required(
+                                "show_things",
+                                default=self.config_entry.options.get("show_things"),
+                            ): bool
+                        }
+                    ),
+                )
+    
+    
+
+    
+    
     async def async_step_config(
         self, user_input=None, api_response=None, p_user_input=None
     ):

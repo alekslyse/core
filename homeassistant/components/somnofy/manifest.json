@@ -2,9 +2,11 @@
   "domain": "somnofy",
   "name": "Somnofy Non-Contact Smart Sleep Monitor",
   "config_flow": true,
-  "documentation": "https://www.home-assistant.io/integrations/somnofy",
+  "documentation": "https://github.com/alekslyse/somnofy",
+  "issue_tracker": "https://github.com/alekslyse/somnofy/issues",
   "dependencies": ["mqtt"],
   "requirements": [],
+  "version": "0.7",
   "dhcp": [
     {
       "hostname": "somnofy_*",

@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "[%key:common::config_flow::data::flow_title%]",
     "step": {
       "user": {
         "title": "Somnofy",

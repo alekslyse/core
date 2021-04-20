@@ -7,7 +7,7 @@
             "auth_error": "Could not fetch config data. The username or password is incorrect",
             "serial_error": "Your login was correct, but the Somnofy serial was not correct. We need to fetch the config from the API"    
         },
-        "flow_title": "Somnofy: {name}",
+        "flow_title": "Somnofy Non-Contact Smart Sleep Monitor ({device_id})",
         "step": {
             "user": {
                 "data": {

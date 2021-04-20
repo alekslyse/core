@@ -3,7 +3,7 @@
 import logging
 import os
 
-from aiohttp import ClientSession, BasicAuth
+from aiohttp import BasicAuth, ClientSession
 
 from . import exceptions
 
